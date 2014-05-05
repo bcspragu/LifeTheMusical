@@ -1,4 +1,4 @@
-var size = 20;
+var size = 25;
 var life = new Array(size);
 var pieces = new Array(size);
 var startID;
