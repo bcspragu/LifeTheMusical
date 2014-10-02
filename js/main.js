@@ -6,19 +6,14 @@ var firstBlockX;
 var firstBlockY;
 var mode;
 var dragging;
+var play;
 
 $(function(){
 	MIDI.loadPlugin({
 		soundfontUrl: "bower_components/midi/soundfont/",
 		instrument: "acoustic_grand_piano",
 		callback: function() {
-			var delay = 0; // play one note every quarter second
-			var note = 50; // the MIDI note
-			var velocity = 127; // how hard the note hits
-			// play the note
-			MIDI.setVolume(0, 127);
-			MIDI.noteOn(0, note, velocity, delay);
-			MIDI.noteOff(0, note, delay + 0.75);
+      play = true;
 		}
 	});
   var canvas = $('.game-board');
@@ -30,8 +25,7 @@ $(function(){
 
   var paper = Raphael(canvas[0],smaller_dim, smaller_dim);
 
-  var square = smaller_dim/size;
-
+  var square = smaller_dim/size; 
   paper.rect(0,0,smaller_dim,smaller_dim).attr({fill: 'black'});
 
   for(var i = 0; i < size; i++){
@@ -133,6 +127,15 @@ function setPiece(i,j){
     }
   }else{
     if(surrounding == 3){
+      if (playing) {
+        var delay = 0; // play one note every quarter second
+        var note = j*10; // the MIDI note
+        var velocity = 127; // how hard the note hits
+        // play the note
+        MIDI.setVolume(0, 127);
+        MIDI.noteOn(0, note, velocity, delay);
+        MIDI.noteOff(0, note, delay + 0.75);
+      }
       return true;
     }else{
       return false;
