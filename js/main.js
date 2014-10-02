@@ -127,7 +127,7 @@ function setPiece(i,j){
     }
   }else{
     if(surrounding == 3){
-      if (playing) {
+      if (play) {
         var delay = 0; // play one note every quarter second
         var note = j*10; // the MIDI note
         var velocity = 127; // how hard the note hits
