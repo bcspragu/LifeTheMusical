@@ -1,14 +1,38 @@
-var size = 25;
+var size = 10;
 var life = new Array(size);
 var pieces = new Array(size);
 var startID;
+var firstBlockX;
+var firstBlockY;
+var mode;
+var dragging;
 
 $(function(){
+	MIDI.loadPlugin({
+		soundfontUrl: "bower_components/midi/soundfont/",
+		instrument: "acoustic_grand_piano",
+		callback: function() {
+			var delay = 0; // play one note every quarter second
+			var note = 50; // the MIDI note
+			var velocity = 127; // how hard the note hits
+			// play the note
+			MIDI.setVolume(0, 127);
+			MIDI.noteOn(0, note, velocity, delay);
+			MIDI.noteOff(0, note, delay + 0.75);
+		}
+	});
   var canvas = $('.game-board');
-  var paper = Raphael(canvas[0],canvas.width(),canvas.width());
   var spacing = 10;
-  var square = canvas.width()/size;
-  paper.rect(0,0,canvas.width(),canvas.width()).attr({fill: 'black'});
+  var smaller_dim = canvas.width();
+  if (canvas.height() < smaller_dim) {
+    smaller_dim = canvas.height();
+  }
+
+  var paper = Raphael(canvas[0],smaller_dim, smaller_dim);
+
+  var square = smaller_dim/size;
+
+  paper.rect(0,0,smaller_dim,smaller_dim).attr({fill: 'black'});
 
   for(var i = 0; i < size; i++){
     life[i] = new Array(size);
@@ -18,7 +42,7 @@ $(function(){
   for(var i = 0; i < size; i++){
     for(var j = 0; j < size; j++){
       //life[i][j] = false;
-      life[i][j] = Math.random() > 0.5;
+      life[i][j] = false;
       var color = life[i][j] ? 'black' : 'white';
       pieces[i][j] = paper.rect(
         i*square+spacing/2,
@@ -28,17 +52,39 @@ $(function(){
         .attr({fill: color})
         .data('x',i)
         .data('y',j)
-        .click(function(){
+        .drag(function(){
+        },function(){
+          dragging = true
           var x = this.data('x');
           var y = this.data('y');
-
-          life[x][y] = !life[x][y];
+          firstBlockX = x;
+          firstBlockY = y;
+          mode = !life[x][y];
+          life[x][y] = mode;
           if(life[x][y]){
             this.animate({fill: 'black'},100);
           }else{
             this.animate({fill: 'white'},100);
           }
-        });
+        },
+        function(){
+          dragging = false;
+          firstBlockX = -1;
+          firstBlockY = -1;
+        })
+      .mouseover(function(){
+        if (dragging) {
+          var x = this.data('x');
+          var y = this.data('y');
+
+          life[x][y] = mode;
+          if(life[x][y]){
+            this.animate({fill: 'black'},100);
+          }else{
+            this.animate({fill: 'white'},100);
+          }
+        }
+      });
     }
   }
 
@@ -49,6 +95,16 @@ $(function(){
   $('.stop').click(function(){
     clearInterval(startID);
   })
+
+  $('.clear').click(function(){
+    clearInterval(startID);
+    for(var i = 0; i < size; i++){
+      for(var j = 0; j < size; j++){
+        life[i][j] = false
+        pieces[i][j].animate({fill: 'white'},100);
+      }
+    }
+  });
 });
 
 function countSurrounding(i,j){
